@@ -8,7 +8,8 @@ to classify the sentiment of movie reviews.
 import pickle  # Standard library
 
 import streamlit as st  # Third-party libraries
-from tensorflow import keras
+import tensorflow as tf
+from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Cache the model and tokenizer loading for better performance
@@ -16,12 +17,15 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 def load_sentiment_model():
     """Loads and returns the pre-trained sentiment analysis LSTM model."""
     try:
-        return keras.models.load_model('sentiment_lstm_model.h5')
+        return load_model('sentiment_lstm_model.h5')
     except OSError as e:
         st.error(f"❌ Model file not found: {e}")
         return None
+    except ValueError as e:
+        st.error(f"❌ Model file corrupted: {e}")
+        return None
     except Exception as e:
-        st.error(f"❌ Unexpected error loading model: {e}")
+        st.error(f"❌ Unexpected error: {e}")
         return None
 
 @st.cache_resource
@@ -33,8 +37,11 @@ def load_tokenizer():
     except OSError as e:
         st.error(f"❌ Tokenizer file not found: {e}")
         return None
+    except ValueError as e:
+        st.error(f"❌ Tokenizer file corrupted: {e}")
+        return None
     except Exception as e:
-        st.error(f"❌ Unexpected error loading tokenizer: {e}")
+        st.error(f"❌ Unexpected error: {e}")
         return None
 
 # Load model and tokenizer once
