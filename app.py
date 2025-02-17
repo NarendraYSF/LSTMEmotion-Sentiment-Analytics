@@ -1,25 +1,40 @@
+"""
+Streamlit IMDB Sentiment Analysis App.
+
+This app takes user input, processes the text, and uses a pre-trained LSTM model
+to classify the sentiment of movie reviews.
+"""
+
 import pickle  # Standard library
 
 import streamlit as st  # Third-party libraries
-from tensorflow.keras.models import load_model
+from tensorflow import keras
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Cache the model and tokenizer loading for better performance
 @st.cache_resource
 def load_sentiment_model():
+    """Loads and returns the pre-trained sentiment analysis LSTM model."""
     try:
-        return load_model('sentiment_lstm_model.h5')
+        return keras.models.load_model('sentiment_lstm_model.h5')
+    except OSError as e:
+        st.error(f"❌ Model file not found: {e}")
+        return None
     except Exception as e:
-        st.error(f"❌ Error loading model: {e}")
+        st.error(f"❌ Unexpected error loading model: {e}")
         return None
 
 @st.cache_resource
 def load_tokenizer():
+    """Loads and returns the tokenizer used for text preprocessing."""
     try:
         with open('tokenizer.pkl', 'rb') as file:
             return pickle.load(file)
+    except OSError as e:
+        st.error(f"❌ Tokenizer file not found: {e}")
+        return None
     except Exception as e:
-        st.error(f"❌ Error loading tokenizer: {e}")
+        st.error(f"❌ Unexpected error loading tokenizer: {e}")
         return None
 
 # Load model and tokenizer once
@@ -45,8 +60,8 @@ if st.button("Analyze Sentiment"):
 
             # Predict sentiment
             prediction = model.predict(padded_sequence)
-            sentiment = "😃 Positive" if prediction[0][0] > 0.5 else "☹️ Negative"
+            SENTIMENT_RESULT = "😃 Positive" if prediction[0][0] > 0.5 else "☹️ Negative"
 
             # Display the sentiment result
             st.markdown("### Sentiment Analysis Result:")
-            st.success(sentiment)
+            st.success(SENTIMENT_RESULT)
